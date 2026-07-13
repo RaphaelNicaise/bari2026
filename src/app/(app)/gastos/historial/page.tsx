@@ -6,7 +6,8 @@ import { useExpenses, useDeleteExpense } from '@/lib/queries/expenses';
 import { useUsers } from '@/lib/queries/users';
 import { ListSkeleton } from '@/components/ui/skeleton';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
-import { ArrowLeft, Trash2, Handshake, Receipt } from 'lucide-react';
+import { ExpenseDrawer } from '@/components/expenses/expense-drawer';
+import { ArrowLeft, Trash2, Handshake, Receipt, Pencil } from 'lucide-react';
 import { Expense } from '@/types';
 
 export default function HistorialGastosPage() {
@@ -15,6 +16,7 @@ export default function HistorialGastosPage() {
   const deleteExpense = useDeleteExpense();
 
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
+  const [editTarget, setEditTarget] = useState<Expense | null>(null);
 
   const usersMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -85,20 +87,34 @@ export default function HistorialGastosPage() {
                 })}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-center gap-1">
               <span className="text-sm font-semibold text-zinc-200">
                 {formatMoney(expense.total_amount)}
               </span>
-              <button
-                onClick={() => setDeleteTarget(expense)}
-                className="rounded-md p-1.5 text-zinc-600 opacity-100 transition-all hover:bg-red-400/10 hover:text-red-400"
-              >
-                <Trash2 size={14} />
-              </button>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setEditTarget(expense)}
+                  className="rounded-md p-1.5 text-zinc-600 transition-all hover:bg-sky-400/10 hover:text-sky-400"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={() => setDeleteTarget(expense)}
+                  className="rounded-md p-1.5 text-zinc-600 transition-all hover:bg-red-400/10 hover:text-red-400"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
+
+      <ExpenseDrawer
+        isOpen={!!editTarget}
+        initialData={editTarget}
+        onClose={() => setEditTarget(null)}
+      />
 
       {/* Delete confirmation */}
       <ConfirmModal

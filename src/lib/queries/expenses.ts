@@ -72,6 +72,54 @@ export function useAddExpense() {
   });
 }
 
+export function useUpdateExpense() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (
+      input: AddExpenseInput & { id: string }
+    ) => {
+      // 1. Update the expense details
+      const { error: expenseError } = await supabase
+        .from('expenses')
+        .update({
+          description: input.description,
+          total_amount: input.total_amount,
+          paid_by: input.paid_by,
+          is_settlement: input.is_settlement,
+          split_mode: input.split_mode,
+        })
+        .eq('id', input.id);
+
+      if (expenseError) throw expenseError;
+
+      // 2. Delete existing splits
+      const { error: deleteError } = await supabase
+        .from('expense_splits')
+        .delete()
+        .eq('expense_id', input.id);
+
+      if (deleteError) throw deleteError;
+
+      // 3. Insert new splits
+      const splitsToInsert = input.splits.map((s) => ({
+        expense_id: input.id,
+        user_id: s.user_id,
+        amount_owed: s.amount_owed,
+      }));
+
+      const { error: splitsError } = await supabase
+        .from('expense_splits')
+        .insert(splitsToInsert);
+
+      if (splitsError) throw splitsError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    },
+  });
+}
+
 export function useDeleteExpense() {
   const queryClient = useQueryClient();
 

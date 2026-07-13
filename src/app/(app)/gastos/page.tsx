@@ -7,7 +7,7 @@ import { useExpenses, useDeleteExpense } from '@/lib/queries/expenses';
 import { calculateNetBalances, simplifyDebts, getUserDebts } from '@/lib/debt-solver';
 import { ListSkeleton } from '@/components/ui/skeleton';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
-import { AddExpenseDrawer } from '@/components/expenses/add-expense-drawer';
+import { ExpenseDrawer } from '@/components/expenses/expense-drawer';
 import { SettleUpDrawer } from '@/components/expenses/settle-up-drawer';
 import Link from 'next/link';
 import {
@@ -17,7 +17,8 @@ import {
   Trash2,
   Handshake,
   Receipt,
-  Send,
+  Banknote,
+  Pencil,
 } from 'lucide-react';
 import { Expense } from '@/types';
 
@@ -30,6 +31,7 @@ export default function GastosPage() {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showSettleUp, setShowSettleUp] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
+  const [editTarget, setEditTarget] = useState<Expense | null>(null);
 
   const usersMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -37,8 +39,8 @@ export default function GastosPage() {
     return map;
   }, [users]);
 
-  const { transfers, userDebts, totalSpent } = useMemo(() => {
-    if (!expenses || !users) return { transfers: [], userDebts: { youOwe: [], theyOweYou: [] }, totalSpent: 0 };
+  const { transfers, userDebts, totalSpent, myShare } = useMemo(() => {
+    if (!expenses || !users) return { transfers: [], userDebts: { youOwe: [], theyOweYou: [] }, totalSpent: 0, myShare: 0 };
 
     const balances = calculateNetBalances(expenses, usersMap);
     const simplified = simplifyDebts(balances);
@@ -47,7 +49,16 @@ export default function GastosPage() {
       .filter((e) => !e.is_settlement)
       .reduce((sum, e) => sum + e.total_amount, 0);
 
-    return { transfers: simplified, userDebts: debts, totalSpent: total };
+    const myShare = session
+      ? expenses
+          .filter((e) => !e.is_settlement)
+          .reduce((sum, e) => {
+            const split = e.splits?.find((s) => s.user_id === session.id);
+            return sum + (split ? split.amount_owed : 0);
+          }, 0)
+      : 0;
+
+    return { transfers: simplified, userDebts: debts, totalSpent: total, myShare };
   }, [expenses, users, usersMap, session]);
 
   const netAmount = useMemo(() => {
@@ -93,11 +104,27 @@ export default function GastosPage() {
             ? 'Estás al día'
             : netAmount > 0
             ? `Te deben ${formatMoney(netAmount)}`
-            : `Debés ${formatMoney(netAmount)}`}
+            : `Debés ${formatMoney(Math.abs(netAmount))}`}
         </p>
-        <p className="mt-3 text-xs text-zinc-500">
-          Total del viaje: {formatMoney(totalSpent)}
-        </p>
+        
+        <div className="mt-4 flex items-center justify-between border-t border-zinc-800 pt-3">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+              Total Viaje
+            </span>
+            <span className="text-sm font-semibold text-zinc-300">
+              {formatMoney(totalSpent)}
+            </span>
+          </div>
+          <div className="flex flex-col text-right">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+              Mi Parte
+            </span>
+            <span className="text-sm font-semibold text-sky-400">
+              {formatMoney(myShare)}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Your Debts Detail */}
@@ -214,16 +241,24 @@ export default function GastosPage() {
                 })}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-center gap-1">
               <span className="text-sm font-semibold text-zinc-200">
                 {formatMoney(expense.total_amount)}
               </span>
-              <button
-                onClick={() => setDeleteTarget(expense)}
-                className="rounded-md p-1.5 text-zinc-600 opacity-100 transition-all hover:bg-red-400/10 hover:text-red-400"
-              >
-                <Trash2 size={14} />
-              </button>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setEditTarget(expense)}
+                  className="rounded-md p-1.5 text-zinc-600 transition-all hover:bg-sky-400/10 hover:text-sky-400"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={() => setDeleteTarget(expense)}
+                  className="rounded-md p-1.5 text-zinc-600 transition-all hover:bg-red-400/10 hover:text-red-400"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -235,7 +270,7 @@ export default function GastosPage() {
           onClick={() => setShowSettleUp(true)}
           className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition-all hover:bg-emerald-400 active:scale-95"
         >
-          <Send size={20} className="-ml-1" />
+          <Banknote size={20} />
         </button>
         <button
           onClick={() => setShowAddExpense(true)}
@@ -246,9 +281,13 @@ export default function GastosPage() {
       </div>
 
       {/* Drawers */}
-      <AddExpenseDrawer
-        isOpen={showAddExpense}
-        onClose={() => setShowAddExpense(false)}
+      <ExpenseDrawer
+        isOpen={showAddExpense || !!editTarget}
+        initialData={editTarget}
+        onClose={() => {
+          setShowAddExpense(false);
+          setEditTarget(null);
+        }}
       />
       <SettleUpDrawer
         isOpen={showSettleUp}

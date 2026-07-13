@@ -3,24 +3,27 @@
 import { useState, useEffect } from 'react';
 import { Drawer } from '@/components/ui/drawer';
 import { useUsers } from '@/lib/queries/users';
-import { useAddExpense } from '@/lib/queries/expenses';
+import { useAddExpense, useUpdateExpense } from '@/lib/queries/expenses';
 import { getSession } from '@/lib/session';
+import { Expense } from '@/types';
 
-interface AddExpenseDrawerProps {
+interface ExpenseDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  initialData?: Expense | null;
 }
 
-export function AddExpenseDrawer({ isOpen, onClose }: AddExpenseDrawerProps) {
+export function ExpenseDrawer({ isOpen, onClose, initialData }: ExpenseDrawerProps) {
   const session = getSession();
   const { data: users } = useUsers();
   const addExpense = useAddExpense();
+  const updateExpense = useUpdateExpense();
 
   const [description, setDescription] = useState('');
   const [totalAmount, setTotalAmount] = useState('');
   const [paidBy, setPaidBy] = useState<string>(session?.id ?? '');
   const [beneficiaries, setBeneficiaries] = useState<Set<string>>(new Set());
-  const [splitMode, setSplitMode] = useState<'equal' | 'exact'>('equal');
+  const [splitMode, setSplitMode] = useState<'equal' | 'exact' | 'percentage'>('equal');
   const [exactAmounts, setExactAmounts] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -31,18 +34,39 @@ export function AddExpenseDrawer({ isOpen, onClose }: AddExpenseDrawerProps) {
 
   useEffect(() => {
     if (isOpen) {
-      setDescription('');
-      setTotalAmount('');
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      setPaidBy(session?.id ?? '');
-      setSplitMode('equal');
-      setExactAmounts({});
-      if (users) {
-        setBeneficiaries(new Set(users.map((u) => u.id)));
+      if (initialData) {
+        setDescription(initialData.description);
+        setTotalAmount(initialData.total_amount.toString());
+        setPaidBy(initialData.paid_by);
+        setSplitMode(initialData.split_mode);
+
+        const newBens = new Set<string>();
+        const exact: Record<string, string> = {};
+
+        if (initialData.splits) {
+          initialData.splits.forEach(s => {
+            newBens.add(s.user_id);
+            if (initialData.split_mode === 'exact') {
+              exact[s.user_id] = s.amount_owed.toString();
+            }
+          });
+        }
+        setBeneficiaries(newBens);
+        setExactAmounts(exact);
+      } else {
+        setDescription('');
+        setTotalAmount('');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        setPaidBy(session?.id ?? '');
+        setSplitMode('equal');
+        setExactAmounts({});
+        if (users) {
+          setBeneficiaries(new Set(users.map((u) => u.id)));
+        }
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   const toggleBeneficiary = (userId: string) => {
     const next = new Set(beneficiaries);
@@ -73,23 +97,32 @@ export function AddExpenseDrawer({ isOpen, onClose }: AddExpenseDrawerProps) {
       }));
     }
 
-    addExpense.mutate(
-      {
-        description: description.trim(),
-        total_amount: total,
-        paid_by: paidBy,
-        is_settlement: false,
-        split_mode: splitMode,
-        splits,
-      },
-      {
-        onSuccess: () => onClose(),
-      }
-    );
+    const payload = {
+      description: description.trim(),
+      total_amount: total,
+      paid_by: paidBy,
+      is_settlement: false,
+      split_mode: splitMode,
+      splits,
+    };
+
+    if (initialData) {
+      updateExpense.mutate(
+        { id: initialData.id, ...payload },
+        { onSuccess: () => onClose() }
+      );
+    } else {
+      addExpense.mutate(
+        payload,
+        { onSuccess: () => onClose() }
+      );
+    }
   };
 
+  const isPending = addExpense.isPending || updateExpense.isPending;
+
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} title="Nuevo gasto">
+    <Drawer isOpen={isOpen} onClose={onClose} title={initialData ? "Editar gasto" : "Nuevo gasto"}>
       <div className="space-y-6">
         <div>
           <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
@@ -222,10 +255,10 @@ export function AddExpenseDrawer({ isOpen, onClose }: AddExpenseDrawerProps) {
 
         <button
           onClick={handleSubmit}
-          disabled={!description.trim() || total <= 0 || beneficiaryCount === 0 || addExpense.isPending}
+          disabled={!description.trim() || total <= 0 || beneficiaryCount === 0 || isPending}
           className="w-full rounded-xl bg-sky-500 py-3 text-sm font-semibold text-white transition-all hover:bg-sky-400 disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98]"
         >
-          {addExpense.isPending ? 'Guardando...' : 'Agregar gasto'}
+          {isPending ? 'Guardando...' : initialData ? 'Guardar cambios' : 'Agregar gasto'}
         </button>
       </div>
     </Drawer>
