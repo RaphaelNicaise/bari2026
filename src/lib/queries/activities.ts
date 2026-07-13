@@ -49,3 +49,26 @@ export function useDeleteActivity() {
     },
   });
 }
+
+export function useUpdateActivitiesOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (updates: { id: string; sort_order: number }[]) => {
+      // Supabase doesn't have bulk update via RPC out of the box unless defined,
+      // so we do it in a Promise.all for now.
+      const promises = updates.map((update) =>
+        supabase
+          .from('activities')
+          .update({ sort_order: update.sort_order })
+          .eq('id', update.id)
+      );
+      const results = await Promise.all(promises);
+      const hasError = results.some((r) => r.error);
+      if (hasError) throw new Error('Error updating order');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activities'] });
+    },
+  });
+}

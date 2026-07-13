@@ -13,7 +13,8 @@ export function AddActivityDrawer({ isOpen, onClose }: AddActivityDrawerProps) {
   const addActivity = useAddActivity();
 
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState(''); // we will use this for time, e.g. "10:30 AM"
+  const [timeStr, setTimeStr] = useState('');
+  const [description, setDescription] = useState('');
   const [dateStr, setDateStr] = useState('');
   const [mapUrl, setMapUrl] = useState('');
 
@@ -26,16 +27,17 @@ export function AddActivityDrawer({ isOpen, onClose }: AddActivityDrawerProps) {
     addActivity.mutate(
       {
         title: title.trim(),
-        description: description.trim() || null,
+        description: timeStr ? timeStr : null,
         day_index: dateInt,
-        sort_order: parseInt(description.replace(/[^0-9]/g, '')) || 0, // sort by time if provided
+        sort_order: 0,
         map_url: mapUrl.trim() || null,
-        notes: null,
+        notes: description.trim() || null,
       },
       {
         onSuccess: () => {
           setTitle('');
           setDescription('');
+          setTimeStr('');
           setDateStr('');
           setMapUrl('');
           onClose();
@@ -74,13 +76,25 @@ export function AddActivityDrawer({ isOpen, onClose }: AddActivityDrawerProps) {
 
         <div>
           <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
-            Hora o Descripción
+            Horario (Opcional)
+          </label>
+          <input
+            type="time"
+            value={timeStr}
+            onChange={(e) => setTimeStr(e.target.value)}
+            className="mt-1.5 w-full border-b border-zinc-800 bg-transparent py-2 text-sm text-zinc-100 outline-none focus:border-zinc-500 transition-colors [color-scheme:dark]"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+            Notas o Descripción Corta (Opcional)
           </label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Ej: 10:30 AM (Nos encontramos en la base)"
+            placeholder="Ej: Nos encontramos en la base..."
             className="mt-1.5 w-full border-b border-zinc-800 bg-transparent py-2 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-zinc-500 transition-colors"
           />
         </div>

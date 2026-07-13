@@ -9,6 +9,7 @@ import { ListSkeleton } from '@/components/ui/skeleton';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { AddExpenseDrawer } from '@/components/expenses/add-expense-drawer';
 import { SettleUpDrawer } from '@/components/expenses/settle-up-drawer';
+import Link from 'next/link';
 import {
   Plus,
   ArrowUpRight,
@@ -163,17 +164,27 @@ export default function GastosPage() {
         </div>
       )}
 
-      {/* Expense History */}
+      {/* Expense History Preview */}
       <div className="space-y-2">
-        <h2 className="text-xs font-medium tracking-widest text-zinc-500 uppercase">
-          Historial
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-medium tracking-widest text-zinc-500 uppercase">
+            Últimos Movimientos
+          </h2>
+          {expenses && expenses.length > 3 && (
+            <Link
+              href="/gastos/historial"
+              className="text-xs font-medium text-sky-400 hover:text-sky-300 transition-colors"
+            >
+              Ver todo →
+            </Link>
+          )}
+        </div>
         {expenses?.length === 0 && (
           <p className="py-8 text-center text-sm text-zinc-600">
             No hay gastos registrados
           </p>
         )}
-        {expenses?.map((expense) => (
+        {expenses?.slice(0, 3).map((expense) => (
           <div
             key={expense.id}
             className="group flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 transition-colors hover:bg-zinc-900"
