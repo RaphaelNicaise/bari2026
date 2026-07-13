@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Drawer } from '@/components/ui/drawer';
 import { useAddActivity, useUpdateActivity } from '@/lib/queries/activities';
 import { Activity } from '@/types';
+import { X } from 'lucide-react';
 
 interface ActivityDrawerProps {
   isOpen: boolean;
@@ -117,12 +118,23 @@ export function ActivityDrawer({ isOpen, onClose, initialData, defaultDateInt }:
           <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
             Horario (Opcional)
           </label>
-          <input
-            type="time"
-            value={timeStr}
-            onChange={(e) => setTimeStr(e.target.value)}
-            className="mt-1.5 w-full border-b border-zinc-800 bg-transparent py-2 text-sm text-zinc-100 outline-none focus:border-zinc-500 transition-colors [color-scheme:dark]"
-          />
+          <div className="relative mt-1.5 flex items-center border-b border-zinc-800 focus-within:border-zinc-500 transition-colors">
+            <input
+              type="time"
+              value={timeStr}
+              onChange={(e) => setTimeStr(e.target.value)}
+              className="w-full bg-transparent py-2 text-sm text-zinc-100 outline-none [color-scheme:dark]"
+            />
+            {timeStr && (
+              <button
+                type="button"
+                onClick={() => setTimeStr('')}
+                className="absolute right-0 flex h-8 w-8 items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
         </div>
 
         <div>

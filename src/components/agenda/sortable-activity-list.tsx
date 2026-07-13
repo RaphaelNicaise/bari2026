@@ -1,25 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
   SortableContext,
-  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Activity } from '@/types';
 import { Clock, MapPin, Trash2, GripVertical, Pencil } from 'lucide-react';
+import { useDroppable } from '@dnd-kit/core';
 
 interface SortableActivityItemProps {
   activity: Activity;
@@ -102,73 +91,34 @@ function SortableActivityItem({ activity, onEdit, onDelete }: SortableActivityIt
 }
 
 interface SortableActivityListProps {
+  dayIndex: number;
   activities: Activity[];
   onEdit: (act: Activity) => void;
   onDelete: (act: Activity) => void;
-  onReorder: (updates: { id: string; sort_order: number }[]) => void;
 }
 
 export function SortableActivityList({
+  dayIndex,
   activities,
   onEdit,
   onDelete,
-  onReorder,
 }: SortableActivityListProps) {
-  const [items, setItems] = useState(activities);
-
-  // Sync internal state with external props when they change
-  useEffect(() => {
-    setItems(activities);
-  }, [activities]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5, // allows clicking the delete button without triggering drag
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      setItems((prev) => {
-        const oldIndex = prev.findIndex((item) => item.id === active.id);
-        const newIndex = prev.findIndex((item) => item.id === over.id);
-
-        const newItems = arrayMove(prev, oldIndex, newIndex);
-
-        // Calculate new sort_orders
-        // Supabase has sort_order. We just use the array index for simplicity
-        const updates = newItems.map((item, index) => ({
-          id: item.id,
-          sort_order: index,
-        }));
-
-        // Fire callback to save to DB
-        onReorder(updates);
-
-        return newItems;
-      });
-    }
-  };
+  const { setNodeRef } = useDroppable({
+    id: `day-${dayIndex}`,
+    data: { dayIndex },
+  });
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext
-        items={items.map((i) => i.id)}
-        strategy={verticalListSortingStrategy}
-      >
-        <div className="space-y-3 pl-2 border-l border-zinc-800/60 ml-2">
-          {items.map((act) => (
-            <SortableActivityItem key={act.id} activity={act} onEdit={onEdit} onDelete={onDelete} />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
+    <SortableContext
+      id={`day-${dayIndex}`}
+      items={activities.map((i) => i.id)}
+      strategy={verticalListSortingStrategy}
+    >
+      <div ref={setNodeRef} className="space-y-3 pl-2 border-l border-zinc-800/60 ml-2 min-h-[50px]">
+        {activities.map((act) => (
+          <SortableActivityItem key={act.id} activity={act} onEdit={onEdit} onDelete={onDelete} />
+        ))}
+      </div>
+    </SortableContext>
   );
 }

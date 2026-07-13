@@ -88,7 +88,7 @@ function ChecklistSection({
             <span className="flex-1 text-sm text-zinc-200">{item.content}</span>
             <button
               onClick={() => deleteItem.mutate(item.id)}
-              className="rounded-md p-1.5 text-zinc-600 transition-all hover:text-red-400"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-zinc-600 transition-all hover:bg-red-400/10 hover:text-red-400"
             >
               <Trash2 size={16} />
             </button>
@@ -124,7 +124,7 @@ function ChecklistSection({
               </span>
               <button
                 onClick={() => deleteItem.mutate(item.id)}
-                className="rounded-md p-1.5 text-zinc-600 transition-all hover:text-red-400"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-zinc-600 transition-all hover:bg-red-400/10 hover:text-red-400"
               >
                 <Trash2 size={16} />
               </button>
