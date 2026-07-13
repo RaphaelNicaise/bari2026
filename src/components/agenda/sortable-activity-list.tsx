@@ -19,14 +19,15 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Activity } from '@/types';
-import { Clock, MapPin, Trash2, GripVertical } from 'lucide-react';
+import { Clock, MapPin, Trash2, GripVertical, Pencil } from 'lucide-react';
 
 interface SortableActivityItemProps {
   activity: Activity;
+  onEdit: (act: Activity) => void;
   onDelete: (act: Activity) => void;
 }
 
-function SortableActivityItem({ activity, onDelete }: SortableActivityItemProps) {
+function SortableActivityItem({ activity, onEdit, onDelete }: SortableActivityItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: activity.id });
 
@@ -82,24 +83,34 @@ function SortableActivityItem({ activity, onDelete }: SortableActivityItemProps)
         )}
       </div>
 
-      <button
-        onClick={() => onDelete(activity)}
-        className="rounded-md p-1.5 text-zinc-600 opacity-100 transition-all hover:bg-red-400/10 hover:text-red-400 z-10"
-      >
-        <Trash2 size={16} />
-      </button>
+      <div className="flex flex-col items-center gap-1 z-10">
+        <button
+          onClick={() => onEdit(activity)}
+          className="rounded-md p-1.5 text-zinc-600 opacity-100 transition-all hover:bg-sky-400/10 hover:text-sky-400"
+        >
+          <Pencil size={16} />
+        </button>
+        <button
+          onClick={() => onDelete(activity)}
+          className="rounded-md p-1.5 text-zinc-600 opacity-100 transition-all hover:bg-red-400/10 hover:text-red-400"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
     </div>
   );
 }
 
 interface SortableActivityListProps {
   activities: Activity[];
+  onEdit: (act: Activity) => void;
   onDelete: (act: Activity) => void;
   onReorder: (updates: { id: string; sort_order: number }[]) => void;
 }
 
 export function SortableActivityList({
   activities,
+  onEdit,
   onDelete,
   onReorder,
 }: SortableActivityListProps) {
@@ -154,7 +165,7 @@ export function SortableActivityList({
       >
         <div className="space-y-3 pl-2 border-l border-zinc-800/60 ml-2">
           {items.map((act) => (
-            <SortableActivityItem key={act.id} activity={act} onDelete={onDelete} />
+            <SortableActivityItem key={act.id} activity={act} onEdit={onEdit} onDelete={onDelete} />
           ))}
         </div>
       </SortableContext>

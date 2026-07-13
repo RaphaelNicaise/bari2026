@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useActivities, useDeleteActivity, useUpdateActivitiesOrder } from '@/lib/queries/activities';
 import { ListSkeleton } from '@/components/ui/skeleton';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
-import { AddActivityDrawer } from '@/components/agenda/add-activity-drawer';
+import { ActivityDrawer } from '@/components/agenda/activity-drawer';
 import { SortableActivityList } from '@/components/agenda/sortable-activity-list';
 import { Plus } from 'lucide-react';
 import { Activity } from '@/types';
@@ -16,6 +16,7 @@ export default function AgendaPage() {
 
   const [showAdd, setShowAdd] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Activity | null>(null);
+  const [editTarget, setEditTarget] = useState<Activity | null>(null);
 
   // Group by day_index (YYYYMMDD)
   const groupedActivities = useMemo(() => {
@@ -75,6 +76,7 @@ export default function AgendaPage() {
           
           <SortableActivityList
             activities={group.activities}
+            onEdit={(act) => setEditTarget(act)}
             onDelete={setDeleteTarget}
             onReorder={(updates) => updateOrder.mutate(updates)}
           />
@@ -91,9 +93,13 @@ export default function AgendaPage() {
         </button>
       </div>
 
-      <AddActivityDrawer
-        isOpen={showAdd}
-        onClose={() => setShowAdd(false)}
+      <ActivityDrawer
+        isOpen={showAdd || !!editTarget}
+        initialData={editTarget}
+        onClose={() => {
+          setShowAdd(false);
+          setEditTarget(null);
+        }}
       />
 
       <ConfirmModal

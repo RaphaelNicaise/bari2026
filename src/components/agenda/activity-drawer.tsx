@@ -1,16 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Drawer } from '@/components/ui/drawer';
-import { useAddActivity } from '@/lib/queries/activities';
+import { useAddActivity, useUpdateActivity } from '@/lib/queries/activities';
+import { Activity } from '@/types';
 
-interface AddActivityDrawerProps {
+interface ActivityDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  initialData?: Activity | null;
 }
 
-export function AddActivityDrawer({ isOpen, onClose }: AddActivityDrawerProps) {
+export function ActivityDrawer({ isOpen, onClose, initialData }: ActivityDrawerProps) {
   const addActivity = useAddActivity();
+  const updateActivity = useUpdateActivity();
 
   const [title, setTitle] = useState('');
   const [timeStr, setTimeStr] = useState('');
@@ -18,36 +21,61 @@ export function AddActivityDrawer({ isOpen, onClose }: AddActivityDrawerProps) {
   const [dateStr, setDateStr] = useState('');
   const [mapUrl, setMapUrl] = useState('');
 
+  // When drawer opens, load initial data or clear fields
+  useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setTitle(initialData.title);
+        setTimeStr(initialData.description || ''); // We stored time in description
+        setDescription(initialData.notes || ''); // We stored notes in notes
+        setMapUrl(initialData.map_url || '');
+        
+        // Parse day_index (YYYYMMDD) back to YYYY-MM-DD
+        const diStr = initialData.day_index.toString();
+        if (diStr.length === 8) {
+          setDateStr(`${diStr.substring(0, 4)}-${diStr.substring(4, 6)}-${diStr.substring(6, 8)}`);
+        } else {
+          setDateStr('');
+        }
+      } else {
+        setTitle('');
+        setTimeStr('');
+        setDescription('');
+        setDateStr('');
+        setMapUrl('');
+      }
+    }
+  }, [isOpen, initialData]);
+
   const handleSubmit = () => {
     if (!title.trim() || !dateStr) return;
 
     // Convert date string YYYY-MM-DD to integer YYYYMMDD for sorting
     const dateInt = parseInt(dateStr.replace(/-/g, ''), 10);
 
-    addActivity.mutate(
-      {
-        title: title.trim(),
-        description: timeStr ? timeStr : null,
-        day_index: dateInt,
-        sort_order: 0,
-        map_url: mapUrl.trim() || null,
-        notes: description.trim() || null,
-      },
-      {
-        onSuccess: () => {
-          setTitle('');
-          setDescription('');
-          setTimeStr('');
-          setDateStr('');
-          setMapUrl('');
-          onClose();
-        },
-      }
-    );
+    const payload = {
+      title: title.trim(),
+      description: timeStr ? timeStr : null,
+      day_index: dateInt,
+      map_url: mapUrl.trim() || null,
+      notes: description.trim() || null,
+    };
+
+    const onSuccess = () => {
+      onClose();
+    };
+
+    if (initialData) {
+      updateActivity.mutate({ id: initialData.id, ...payload }, { onSuccess });
+    } else {
+      addActivity.mutate({ ...payload, sort_order: 0 }, { onSuccess });
+    }
   };
 
+  const isPending = addActivity.isPending || updateActivity.isPending;
+
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} title="Nueva Actividad">
+    <Drawer isOpen={isOpen} onClose={onClose} title={initialData ? "Editar Actividad" : "Nueva Actividad"}>
       <div className="space-y-6">
         <div>
           <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
@@ -114,10 +142,10 @@ export function AddActivityDrawer({ isOpen, onClose }: AddActivityDrawerProps) {
 
         <button
           onClick={handleSubmit}
-          disabled={!title.trim() || !dateStr || addActivity.isPending}
+          disabled={!title.trim() || !dateStr || isPending}
           className="w-full rounded-xl bg-sky-500 py-3 text-sm font-semibold text-white transition-all hover:bg-sky-400 disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98]"
         >
-          {addActivity.isPending ? 'Guardando...' : 'Agregar actividad'}
+          {isPending ? 'Guardando...' : initialData ? 'Guardar cambios' : 'Agregar actividad'}
         </button>
       </div>
     </Drawer>
