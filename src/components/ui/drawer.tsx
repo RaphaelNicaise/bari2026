@@ -33,8 +33,8 @@ export function Drawer({ isOpen, onClose, title, children }: DrawerProps) {
       />
       {/* Drawer */}
       <div
-        className={`fixed inset-x-0 bottom-0 z-[95] max-h-[90vh] overflow-y-auto rounded-t-2xl border-t border-zinc-800 bg-zinc-950 transition-transform duration-300 ease-out ${
-          isOpen ? 'translate-y-0' : 'translate-y-full'
+        className={`fixed inset-x-0 bottom-0 z-[95] max-h-[90vh] overflow-y-auto rounded-t-2xl border-t border-zinc-800 bg-zinc-950 transition-all duration-300 ease-out ${
+          isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'
         }`}
       >
         {/* Handle */}

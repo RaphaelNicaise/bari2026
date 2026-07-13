@@ -33,6 +33,7 @@ export function AddExpenseDrawer({ isOpen, onClose }: AddExpenseDrawerProps) {
     if (isOpen) {
       setDescription('');
       setTotalAmount('');
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setPaidBy(session?.id ?? '');
       setSplitMode('equal');
       setExactAmounts({});
@@ -40,7 +41,8 @@ export function AddExpenseDrawer({ isOpen, onClose }: AddExpenseDrawerProps) {
         setBeneficiaries(new Set(users.map((u) => u.id)));
       }
     }
-  }, [isOpen, session, users]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const toggleBeneficiary = (userId: string) => {
     const next = new Set(beneficiaries);

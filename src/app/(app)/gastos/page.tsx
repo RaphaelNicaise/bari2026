@@ -210,7 +210,7 @@ export default function GastosPage() {
               </span>
               <button
                 onClick={() => setDeleteTarget(expense)}
-                className="rounded-md p-1.5 text-zinc-600 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-400/10 hover:text-red-400"
+                className="rounded-md p-1.5 text-zinc-600 opacity-100 transition-all hover:bg-red-400/10 hover:text-red-400"
               >
                 <Trash2 size={14} />
               </button>

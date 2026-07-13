@@ -22,11 +22,13 @@ export function SettleUpDrawer({ isOpen, onClose }: SettleUpDrawerProps) {
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setFromUser(session?.id ?? '');
       setToUser('');
       setAmount('');
     }
-  }, [isOpen, session]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const handleSubmit = () => {
     const parsedAmount = parseFloat(amount);

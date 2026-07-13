@@ -10,7 +10,6 @@ import { User } from '@/types';
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     const session = getSession();
@@ -44,23 +43,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </span>
           <div className="relative">
             <button
-              onClick={() => setShowMenu(!showMenu)}
+              onClick={handleLogout}
               className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
             >
               <span className="text-xs">{currentUser.name}</span>
               <ArrowLeftRight size={12} />
             </button>
-            {showMenu && (
-              <div className="absolute right-0 top-full mt-1 w-40 rounded-lg border border-zinc-800 bg-zinc-900 py-1 shadow-xl">
-                <button
-                  onClick={handleLogout}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
-                >
-                  <LogOut size={14} />
-                  Cambiar perfil
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </header>
