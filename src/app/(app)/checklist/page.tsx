@@ -46,22 +46,27 @@ function ChecklistSection({
   return (
     <div className="space-y-3">
       {/* Add new */}
-      <div className="flex items-center gap-2">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleAdd();
+        }}
+        className="flex items-center gap-2"
+      >
         <input
           type="text"
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
           placeholder="Agregar ítem..."
           className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-200 placeholder:text-zinc-600 outline-none focus:border-zinc-600 transition-colors"
         />
         <button
-          onClick={handleAdd}
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
+          type="submit"
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors active:scale-95"
         >
           <Plus size={16} />
         </button>
-      </div>
+      </form>
 
       {/* Pending items */}
       <div className="space-y-1">
