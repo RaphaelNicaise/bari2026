@@ -83,14 +83,14 @@ function ChecklistSection({
                   completed_by: session?.id ?? null,
                 })
               }
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-zinc-600 transition-colors hover:border-zinc-400"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 border-zinc-700 transition-all hover:border-sky-400"
             />
             <span className="flex-1 text-sm text-zinc-200">{item.content}</span>
             <button
               onClick={() => deleteItem.mutate(item.id)}
-              className="rounded-md p-1 text-zinc-700 opacity-0 transition-all group-hover:opacity-100 hover:text-red-400"
+              className="rounded-md p-1.5 text-zinc-600 transition-all hover:text-red-400"
             >
-              <Trash2 size={13} />
+              <Trash2 size={16} />
             </button>
           </div>
         ))}
@@ -115,18 +115,18 @@ function ChecklistSection({
                     completed_by: null,
                   })
                 }
-                className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-emerald-400/30 bg-emerald-400/10"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 border-sky-400/30 bg-sky-400/20 transition-all hover:bg-sky-400/30"
               >
-                <Check size={12} className="text-emerald-400" />
+                <Check size={14} className="text-sky-400" />
               </button>
               <span className="flex-1 text-sm text-zinc-500 line-through">
                 {item.content}
               </span>
               <button
                 onClick={() => deleteItem.mutate(item.id)}
-                className="rounded-md p-1 text-zinc-700 opacity-0 transition-all group-hover:opacity-100 hover:text-red-400"
+                className="rounded-md p-1.5 text-zinc-600 transition-all hover:text-red-400"
               >
-                <Trash2 size={13} />
+                <Trash2 size={16} />
               </button>
             </div>
           ))}

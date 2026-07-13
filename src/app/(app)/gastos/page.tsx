@@ -17,6 +17,7 @@ import {
   Trash2,
   Handshake,
   Receipt,
+  Send,
 } from 'lucide-react';
 import { Expense } from '@/types';
 
@@ -170,14 +171,12 @@ export default function GastosPage() {
           <h2 className="text-xs font-medium tracking-widest text-zinc-500 uppercase">
             Últimos Movimientos
           </h2>
-          {expenses && expenses.length > 3 && (
-            <Link
-              href="/gastos/historial"
-              className="text-xs font-medium text-sky-400 hover:text-sky-300 transition-colors"
-            >
-              Ver todo →
-            </Link>
-          )}
+          <Link
+            href="/gastos/historial"
+            className="text-xs font-medium text-sky-400 hover:text-sky-300 transition-colors"
+          >
+            Ver todo →
+          </Link>
         </div>
         {expenses?.length === 0 && (
           <p className="py-8 text-center text-sm text-zinc-600">
@@ -231,12 +230,12 @@ export default function GastosPage() {
       </div>
 
       {/* FABs */}
-      <div className="fixed bottom-20 right-4 z-30 flex flex-col gap-2">
+      <div className="fixed bottom-20 right-4 z-30 flex flex-col gap-3">
         <button
           onClick={() => setShowSettleUp(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-zinc-400 shadow-lg transition-all hover:border-sky-400/30 hover:text-sky-400 active:scale-95"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition-all hover:bg-emerald-400 active:scale-95"
         >
-          <Handshake size={16} />
+          <Send size={20} className="-ml-1" />
         </button>
         <button
           onClick={() => setShowAddExpense(true)}

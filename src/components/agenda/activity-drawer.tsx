@@ -9,9 +9,10 @@ interface ActivityDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: Activity | null;
+  defaultDateInt?: number;
 }
 
-export function ActivityDrawer({ isOpen, onClose, initialData }: ActivityDrawerProps) {
+export function ActivityDrawer({ isOpen, onClose, initialData, defaultDateInt }: ActivityDrawerProps) {
   const addActivity = useAddActivity();
   const updateActivity = useUpdateActivity();
 
@@ -41,11 +42,21 @@ export function ActivityDrawer({ isOpen, onClose, initialData }: ActivityDrawerP
         setTitle('');
         setTimeStr('');
         setDescription('');
-        setDateStr('');
         setMapUrl('');
+        
+        if (defaultDateInt) {
+          const diStr = defaultDateInt.toString();
+          if (diStr.length === 8) {
+            setDateStr(`${diStr.substring(0, 4)}-${diStr.substring(4, 6)}-${diStr.substring(6, 8)}`);
+          } else {
+            setDateStr('');
+          }
+        } else {
+          setDateStr('');
+        }
       }
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, defaultDateInt]);
 
   const handleSubmit = () => {
     if (!title.trim() || !dateStr) return;

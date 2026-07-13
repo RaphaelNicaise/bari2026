@@ -14,7 +14,7 @@ export default function AgendaPage() {
   const deleteActivity = useDeleteActivity();
   const updateOrder = useUpdateActivitiesOrder();
 
-  const [showAdd, setShowAdd] = useState(false);
+  const [showAdd, setShowAdd] = useState<number | false>(false);
   const [deleteTarget, setDeleteTarget] = useState<Activity | null>(null);
   const [editTarget, setEditTarget] = useState<Activity | null>(null);
 
@@ -70,9 +70,17 @@ export default function AgendaPage() {
 
       {groupedActivities.map((group) => (
         <section key={group.id} className="space-y-4">
-          <h2 className="sticky top-14 z-20 bg-zinc-950/90 py-2 text-sm font-semibold tracking-wider text-sky-400 uppercase backdrop-blur-xl">
-            {group.label}
-          </h2>
+          <div className="sticky top-14 z-20 flex items-center justify-between bg-zinc-950/90 py-2 backdrop-blur-xl">
+            <h2 className="text-sm font-semibold tracking-wider text-sky-400 uppercase">
+              {group.label}
+            </h2>
+            <button
+              onClick={() => setShowAdd(group.id)}
+              className="flex h-7 w-7 items-center justify-center rounded-md bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 transition-colors"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
           
           <SortableActivityList
             activities={group.activities}
@@ -86,7 +94,7 @@ export default function AgendaPage() {
       {/* FAB Add */}
       <div className="fixed bottom-20 right-4 z-30">
         <button
-          onClick={() => setShowAdd(true)}
+          onClick={() => setShowAdd(0)}
           className="flex h-14 w-14 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg shadow-sky-500/20 transition-all hover:bg-sky-400 active:scale-95"
         >
           <Plus size={24} />
@@ -94,8 +102,9 @@ export default function AgendaPage() {
       </div>
 
       <ActivityDrawer
-        isOpen={showAdd || !!editTarget}
+        isOpen={showAdd !== false || !!editTarget}
         initialData={editTarget}
+        defaultDateInt={typeof showAdd === 'number' ? showAdd : undefined}
         onClose={() => {
           setShowAdd(false);
           setEditTarget(null);
