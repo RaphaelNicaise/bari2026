@@ -11,7 +11,7 @@ export function useUsers() {
         .select('*')
         .order('name');
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []).filter(u => !['Mate', 'Monto'].includes(u.name));
     },
     staleTime: Infinity,
   });
